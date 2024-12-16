@@ -144,6 +144,9 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
         return;
     }
 
+    // !! Acredito ser aqui que a mensagem eh recebida e consequentemente verificada.
+    printf("Bora validar se é aqui mesmo....\n");
+
     for (const uint8_t &byte: data) {
         const uint8_t mavlinkChannel = link->mavlinkChannel();
         mavlink_message_t message{};
@@ -230,6 +233,9 @@ void MAVLinkProtocol::_forward(const mavlink_message_t &message)
     }
 
     uint8_t buf[MAVLINK_MAX_PACKET_LEN]{};
+
+    // !! Aqui a mensagem deve ser assinada 1
+    printf("Vai assinar aqui 1\n");
     const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
     (void) forwardingLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
 }
@@ -250,6 +256,8 @@ void MAVLinkProtocol::_forwardSupport(const mavlink_message_t &message)
     }
 
     uint8_t buf[MAVLINK_MAX_PACKET_LEN]{};
+    // !! Aqui a mensagem deve ser assinada 2
+    printf("Vai assinar aqui 2\n");
     const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
     (void) forwardingSupportLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
 }
@@ -261,6 +269,8 @@ void MAVLinkProtocol::_logData(LinkInterface *link, const mavlink_message_t &mes
         uint8_t buf[MAVLINK_MAX_PACKET_LEN + sizeof(timestamp)]{};
         qToBigEndian(timestamp, buf);
 
+        // !! Aqui a mensagem deve ser assinada 3
+        printf("Vai assinar aqui 3\n");
         const qsizetype len = mavlink_msg_to_send_buffer(buf + sizeof(timestamp), &message) + sizeof(timestamp);
         const QByteArray log_data(reinterpret_cast<const char*>(buf), len);
         if (_tempLogFile->write(log_data) != len) {
