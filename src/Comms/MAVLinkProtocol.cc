@@ -145,7 +145,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
     }
 
     // !! Acredito ser aqui que a mensagem eh recebida e consequentemente verificada.
-    printf("Bora validar se é aqui mesmo....\n");
+    printf("Bora validar se é aqui mesmo.... deve validar sign\n");
 
     for (const uint8_t &byte: data) {
         const uint8_t mavlinkChannel = link->mavlinkChannel();
