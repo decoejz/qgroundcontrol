@@ -24,6 +24,15 @@
 #include <QtCore/QSettings>
 #include <QtCore/QStandardPaths>
 
+#ifdef RSA_SCHEME
+#include <rsa.h>
+#else // * The default method will be no signature
+#include <no_sign.h>
+#endif
+
+const char *pk_name = "../../../pki/px4_pk.pem";
+static key_type *px4_key;
+
 QGC_LOGGING_CATEGORY(MAVLinkProtocolLog, "qgc.comms.mavlinkprotocol")
 
 Q_APPLICATION_STATIC(MAVLinkProtocol, _mavlinkProtocolInstance);
@@ -145,14 +154,21 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
     }
 
     // !! Acredito ser aqui que a mensagem eh recebida e consequentemente verificada.
+    if (px4_key == NULL)
+    {           
+        px4_key = read_key(PUBLIC_KEY, pk_name);
+    }
+    int msg_size = verify((uint8_t *)data.data(), data.size(), px4_key); 
     printf("Bora validar se é aqui mesmo.... deve validar sign\n");
 
-    for (const uint8_t &byte: data) {
+    for (int i = 0; i<msg_size; i++){
+    // for (const uint8_t &byte: data) {
+
         const uint8_t mavlinkChannel = link->mavlinkChannel();
         mavlink_message_t message{};
         mavlink_status_t status{};
 
-        if (mavlink_parse_char(mavlinkChannel, byte, &message, &status) != MAVLINK_FRAMING_OK) {
+        if (mavlink_parse_char(mavlinkChannel, data.data()[i], &message, &status) != MAVLINK_FRAMING_OK) {
             continue;
         }
 

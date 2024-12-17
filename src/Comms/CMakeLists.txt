@@ -1,6 +1,23 @@
 add_subdirectory(AirLink)
 add_subdirectory(MockLink)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/libs/sign_scheme sign_scheme.build)
+
+# Check if SIGN_TYPE environment variable is defined
+if(DEFINED ENV{SIGN_TYPE})
+	if("$ENV{SIGN_TYPE}" STREQUAL "RSA")
+		message(STATUS "SIGN_TYPE is RSA.")
+		set(SCHEME_LIB rsa)
+		add_definitions(-DRSA_SCHEME)
+	else()
+		message(STATUS "SIGN_TYPE no signature configured.")
+		set(SCHEME_LIB no_sign)
+	endif()
+else()
+	message(STATUS "SIGN_TYPE no signature configured.")
+	set(SCHEME_LIB no_sign)
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Core Network Qml Test Widgets)
 
 qt_add_library(Comms STATIC
@@ -29,6 +46,7 @@ target_link_libraries(Comms
         QGC
         Settings
         Vehicle
+        ${SCHEME_LIB}
     PUBLIC
         Qt6::Core
         Qt6::Network
@@ -38,7 +56,11 @@ target_link_libraries(Comms
         Utilities
 )
 
-target_include_directories(Comms PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(Comms
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}/libs/sign_scheme/${SCHEME_LIB}
+)
 
 ############# Serial
 
