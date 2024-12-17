@@ -32,6 +32,8 @@
 
 const char *pk_name = "../../../pki/px4_pk.pem";
 static key_type *px4_key;
+const char *sk_name = "../../../pki/qgc_sk.pem";
+static key_type *qgc_key;
 
 QGC_LOGGING_CATEGORY(MAVLinkProtocolLog, "qgc.comms.mavlinkprotocol")
 
@@ -249,11 +251,23 @@ void MAVLinkProtocol::_forward(const mavlink_message_t &message)
     }
 
     uint8_t buf[MAVLINK_MAX_PACKET_LEN]{};
+    const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
 
     // !! Aqui a mensagem deve ser assinada 1
     printf("Vai assinar aqui 1\n");
-    const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
-    (void) forwardingLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
+    // * Sign message here
+	if (qgc_key == NULL)
+	{
+		qgc_key = read_key(PRIVATE_KEY, sk_name);
+	}
+
+	uint8_t final_message[MAVLINK_MAX_PACKET_LEN+SIGMA_LEN];
+	int final_len = sign(final_message, buf, len, qgc_key);
+	if (final_len <= 0){
+		printf("sign error: %s\n", strerror(errno));
+	}
+
+    (void) forwardingLink->writeBytesThreadSafe(reinterpret_cast<const char*>(final_message), final_len);
 }
 
 void MAVLinkProtocol::_forwardSupport(const mavlink_message_t &message)
@@ -272,10 +286,24 @@ void MAVLinkProtocol::_forwardSupport(const mavlink_message_t &message)
     }
 
     uint8_t buf[MAVLINK_MAX_PACKET_LEN]{};
+    const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
+
+
     // !! Aqui a mensagem deve ser assinada 2
     printf("Vai assinar aqui 2\n");
-    const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
-    (void) forwardingSupportLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
+    // * Sign message here
+	if (qgc_key == NULL)
+	{
+		qgc_key = read_key(PRIVATE_KEY, sk_name);
+	}
+
+	uint8_t final_message[MAVLINK_MAX_PACKET_LEN+SIGMA_LEN];
+	int final_len = sign(final_message, buf, len, qgc_key);
+	if (final_len <= 0){
+		printf("sign error: %s\n", strerror(errno));
+	}
+    
+    (void) forwardingSupportLink->writeBytesThreadSafe(reinterpret_cast<const char*>(final_message), final_len);
 }
 
 void MAVLinkProtocol::_logData(LinkInterface *link, const mavlink_message_t &message)
@@ -284,12 +312,24 @@ void MAVLinkProtocol::_logData(LinkInterface *link, const mavlink_message_t &mes
         const quint64 timestamp = static_cast<quint64>(QDateTime::currentMSecsSinceEpoch() * 1000);
         uint8_t buf[MAVLINK_MAX_PACKET_LEN + sizeof(timestamp)]{};
         qToBigEndian(timestamp, buf);
+        const qsizetype len = mavlink_msg_to_send_buffer(buf + sizeof(timestamp), &message) + sizeof(timestamp);
 
         // !! Aqui a mensagem deve ser assinada 3
         printf("Vai assinar aqui 3\n");
-        const qsizetype len = mavlink_msg_to_send_buffer(buf + sizeof(timestamp), &message) + sizeof(timestamp);
-        const QByteArray log_data(reinterpret_cast<const char*>(buf), len);
-        if (_tempLogFile->write(log_data) != len) {
+        // * Sign message here
+        if (qgc_key == NULL)
+        {
+            qgc_key = read_key(PRIVATE_KEY, sk_name);
+        }
+
+        uint8_t final_message[MAVLINK_MAX_PACKET_LEN+ sizeof(timestamp)+SIGMA_LEN];
+        int final_len = sign(final_message, buf, len, qgc_key);
+        if (final_len <= 0){
+            printf("sign error: %s\n", strerror(errno));
+        }
+        
+        const QByteArray log_data(reinterpret_cast<const char*>(final_message), final_len);
+        if (_tempLogFile->write(log_data) != final_len) {
             const QString message = QStringLiteral("MAVLink Logging failed. Could not write to file %1, logging disabled.").arg(_tempLogFile->fileName());
             qgcApp()->showAppMessage(message, getName());
             _stopLogging();
