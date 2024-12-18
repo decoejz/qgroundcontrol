@@ -30,9 +30,9 @@
 #include <no_sign.h>
 #endif
 
-const char *pk_name = "../../../pki/px4_pk.pem";
+const char *pk_name = "pki/px4_pk.pem";
 static key_type *px4_key;
-const char *sk_name = "../../../pki/qgc_sk.pem";
+const char *sk_name = "pki/qgc_sk.pem";
 static key_type *qgc_key;
 
 QGC_LOGGING_CATEGORY(MAVLinkProtocolLog, "qgc.comms.mavlinkprotocol")
@@ -160,8 +160,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
     {           
         px4_key = read_key(PUBLIC_KEY, pk_name);
     }
-    int msg_size = verify((uint8_t *)data.data(), data.size(), px4_key); 
-    printf("Bora validar se é aqui mesmo.... deve validar sign\n");
+    int msg_size = verify((uint8_t *)data.data(), data.size(), px4_key);
 
     for (int i = 0; i<msg_size; i++){
     // for (const uint8_t &byte: data) {
@@ -254,7 +253,6 @@ void MAVLinkProtocol::_forward(const mavlink_message_t &message)
     const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
 
     // !! Aqui a mensagem deve ser assinada 1
-    printf("Vai assinar aqui 1\n");
     // * Sign message here
 	if (qgc_key == NULL)
 	{
@@ -290,7 +288,6 @@ void MAVLinkProtocol::_forwardSupport(const mavlink_message_t &message)
 
 
     // !! Aqui a mensagem deve ser assinada 2
-    printf("Vai assinar aqui 2\n");
     // * Sign message here
 	if (qgc_key == NULL)
 	{
@@ -315,7 +312,6 @@ void MAVLinkProtocol::_logData(LinkInterface *link, const mavlink_message_t &mes
         const qsizetype len = mavlink_msg_to_send_buffer(buf + sizeof(timestamp), &message) + sizeof(timestamp);
 
         // !! Aqui a mensagem deve ser assinada 3
-        printf("Vai assinar aqui 3\n");
         // * Sign message here
         if (qgc_key == NULL)
         {

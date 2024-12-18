@@ -96,3 +96,4 @@ libs/OpenSSL/
 libs/eigen/
 libs/qmlglsink/
 src/GPS/Drivers/
+*.pem
