@@ -24,6 +24,15 @@
 #include <QtCore/QSettings>
 #include <QtCore/QStandardPaths>
 
+#ifdef RSA_SCHEME
+#include <rsa.h>
+#else // * The default method will be no signature
+#include <no_sign.h>
+#endif
+
+const char *pk_name = "pki/px4_pk.pem";
+static key_type *px4_key;
+
 QGC_LOGGING_CATEGORY(MAVLinkProtocolLog, "qgc.comms.mavlinkprotocol")
 
 Q_APPLICATION_STATIC(MAVLinkProtocol, _mavlinkProtocolInstance);
@@ -144,12 +153,21 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
         return;
     }
 
-    for (const uint8_t &byte: data) {
+    // !! Acredito ser aqui que a mensagem eh recebida e consequentemente verificada.
+    if (px4_key == NULL)
+    {           
+        px4_key = read_key(PUBLIC_KEY, pk_name);
+    }
+    int msg_size = verify((uint8_t *)data.data(), data.size(), px4_key);
+
+    for (int i = 0; i<msg_size; i++){
+    // for (const uint8_t &byte: data) {
+
         const uint8_t mavlinkChannel = link->mavlinkChannel();
         mavlink_message_t message{};
         mavlink_status_t status{};
 
-        if (mavlink_parse_char(mavlinkChannel, byte, &message, &status) != MAVLINK_FRAMING_OK) {
+        if (mavlink_parse_char(mavlinkChannel, data.data()[i], &message, &status) != MAVLINK_FRAMING_OK) {
             continue;
         }
 
@@ -250,7 +268,7 @@ void MAVLinkProtocol::_forwardSupport(const mavlink_message_t &message)
     }
 
     uint8_t buf[MAVLINK_MAX_PACKET_LEN]{};
-    const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
+    const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);    
     (void) forwardingSupportLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
 }
 
@@ -260,7 +278,6 @@ void MAVLinkProtocol::_logData(LinkInterface *link, const mavlink_message_t &mes
         const quint64 timestamp = static_cast<quint64>(QDateTime::currentMSecsSinceEpoch() * 1000);
         uint8_t buf[MAVLINK_MAX_PACKET_LEN + sizeof(timestamp)]{};
         qToBigEndian(timestamp, buf);
-
         const qsizetype len = mavlink_msg_to_send_buffer(buf + sizeof(timestamp), &message) + sizeof(timestamp);
         const QByteArray log_data(reinterpret_cast<const char*>(buf), len);
         if (_tempLogFile->write(log_data) != len) {

@@ -19,7 +19,7 @@ option(QGC_UTM_ADAPTER "Enable UTM Adapter" OFF)
 option(QGC_VIEWER3D "Enable Viewer3D" ON) # Qt6Quick3D_FOUND
 
 option(QGC_ENABLE_UVC "Enable UVC Devices" ON) # Qt6Multimedia_FOUND
-option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer Video Backend" ON)
+option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer Video Backend" OFF)
 option(QGC_ENABLE_QT_VIDEOSTREAMING "Enable QtMultimedia Video Backend" OFF) # Qt6Multimedia_FOUND
 
 set(QGC_MAVLINK_GIT_REPO "https://github.com/mavlink/c_library_v2.git" CACHE STRING "URL to MAVLink Git Repo")

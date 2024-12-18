@@ -90,3 +90,10 @@ Qt*-linux*.tar.*
 node_modules/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
+
+
+libs/OpenSSL/
+libs/eigen/
+libs/qmlglsink/
+src/GPS/Drivers/
+*.pem
