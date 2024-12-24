@@ -139,8 +139,7 @@ void LinkInterface::writeBytesThreadSafe(const char *bytes, int length)
         qgc_key = read_key(PRIVATE_KEY, sk_name);
     }
 
-    int sizeof_int = sizeof(int);
-    uint8_t final_message[sizeof_int + MAVLINK_MAX_PACKET_LEN + SIGN_MAX_LEN];
+    uint8_t final_message[SIGN_HEADER_SIZE + MAVLINK_MAX_PACKET_LEN + SIGN_MAX_LEN];
     int final_len = sign(final_message, (uint8_t *)bytes, length, qgc_key);
     if (final_len <= 0)
     {
