@@ -171,7 +171,6 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
 
     for (int i = 0; i < msg_size; i++)
     {
-
         const uint8_t mavlinkChannel = link->mavlinkChannel();
         mavlink_message_t message{};
         mavlink_status_t status{};
