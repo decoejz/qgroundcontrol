@@ -136,7 +136,7 @@ void LinkInterface::writeBytesThreadSafe(const char *bytes, int length)
     }
 
     const QByteArray data((const char *)final_message, final_len);
-    (void)QMetaObject::invokeMethod(this, "_writeBytes", Qt::AutoConnection, data);
+    (void) QMetaObject::invokeMethod(this, "_writeBytes", Qt::AutoConnection, data);
 }
 
 void LinkInterface::removeVehicleReference()
