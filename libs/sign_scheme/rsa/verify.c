@@ -21,6 +21,7 @@ int verify(uint8_t *msg_raw, uint8_t *msg_signed, int total_len, EVP_PKEY *publi
     int msg_len = total_len - SIGN_HEADER_SIZE - sigma_len;
     unsigned char sigma[sigma_len];
 
+    // (siglen (int) + msg + sigma)
     memcpy(msg_raw, msg_signed + SIGN_HEADER_SIZE, msg_len);
     memcpy(sigma, msg_signed + SIGN_HEADER_SIZE + msg_len, sigma_len);
 

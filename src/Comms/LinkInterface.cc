@@ -23,7 +23,7 @@
 
 #ifdef RSA_SCHEME
 #include <rsa.h>
-#elif ECSDA_SCHEME
+#elif ECDSA_SCHEME
 #include <ecdsa.h>
 #else // * The default method will be no signature
 #include <no_sign.h>

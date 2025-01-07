@@ -30,3 +30,8 @@ then
 fi
 
 cmake --build build --config Debug
+
+echo
+echo
+echo "To run code execute:"
+echo "./build/QGroundControl.app/Contents/MacOS/QGroundControl"
