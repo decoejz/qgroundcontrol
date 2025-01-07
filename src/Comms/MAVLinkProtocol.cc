@@ -147,16 +147,6 @@ void MAVLinkProtocol::logSentBytes(const LinkInterface *link, const QByteArray &
     }
 }
 
-void print_sigma(uint8_t *sigma, int len) // !! Delete this function
-{
-    printf("\n\n Sign Value: {");
-    for (int i = 0; i < len; i++)
-    {
-        printf("0x%02x, ", sigma[i]); // Print each byte as a 2-digit hex number
-    }
-    printf("}\n\n");
-}
-
 void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
 {
     const SharedLinkInterfacePtr linkPtr = LinkManager::instance()->sharedLinkInterfacePointerForLink(link);
@@ -165,13 +155,16 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
         return;
     }
 
-    // !! Acredito ser aqui que a mensagem eh recebida e consequentemente verificada.
+    // * Verify message here
+    if (data.size() > MAVLINK_MAX_PACKET_LEN) {
+        // qDebug() << "Package bigger than expected";
+        return;
+    }
     if (px4_key == NULL)
     {
         px4_key = read_key(PUBLIC_KEY, pk_name);
     }
     uint8_t msg_raw[MAVLINK_MAX_PACKET_LEN];
-    print_sigma((uint8_t *)data.data(), data.size()); // !! Delete this line
     int msg_size = verify(msg_raw, (uint8_t *)data.data(), data.size(), px4_key);
     if (msg_size <= 0)
     {
