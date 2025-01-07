@@ -451,7 +451,7 @@ void MAVLinkProtocol::deleteTempLogFiles()
     const QFileInfoList fileInfoList = tempDir.entryInfoList(QStringList(filter), QDir::Files);
     qCDebug(MAVLinkProtocolLog) << "Temp log file count" << fileInfoList.count();
 
-    for (const QFileInfo &fileInfo : fileInfoList) {
+    for (const QFileInfo &fileInfo: fileInfoList) {
         qCDebug(MAVLinkProtocolLog) << "Temp log file" << fileInfo.filePath();
         (void) QFile::remove(fileInfo.filePath());
     }
