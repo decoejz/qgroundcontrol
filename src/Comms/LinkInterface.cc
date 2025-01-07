@@ -35,15 +35,15 @@ static key_type *qgc_key;
 QGC_LOGGING_CATEGORY(LinkInterfaceLog, "LinkInterfaceLog")
 
 LinkInterface::LinkInterface(SharedLinkConfigurationPtr &config, QObject *parent)
-    : QThread(parent), _config(config)
+    : QThread(parent)
+    , _config(config)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 LinkInterface::~LinkInterface()
 {
-    if (_vehicleReferenceCount != 0)
-    {
+    if (_vehicleReferenceCount != 0) {
         qCWarning(LinkInterfaceLog) << Q_FUNC_INFO << "still have vehicle references:" << _vehicleReferenceCount;
     }
 
@@ -52,8 +52,7 @@ LinkInterface::~LinkInterface()
 
 uint8_t LinkInterface::mavlinkChannel() const
 {
-    if (!mavlinkChannelIsSet())
-    {
+    if (!mavlinkChannelIsSet()) {
         qCWarning(LinkInterfaceLog) << Q_FUNC_INFO << "mavlinkChannelIsSet() == false";
     }
 
@@ -67,23 +66,16 @@ bool LinkInterface::mavlinkChannelIsSet() const
 
 bool LinkInterface::initMavlinkSigning(void)
 {
-    if (!isSecureConnection())
-    {
+    if (!isSecureConnection()) {
         auto appSettings = SettingsManager::instance()->appSettings();
         QByteArray signingKeyBytes = appSettings->mavlink2SigningKey()->rawValue().toByteArray();
-        if (MAVLinkSigning::initSigning(static_cast<mavlink_channel_t>(_mavlinkChannel), signingKeyBytes, MAVLinkSigning::insecureConnectionAccceptUnsignedCallback))
-        {
-            if (signingKeyBytes.isEmpty())
-            {
+        if (MAVLinkSigning::initSigning(static_cast<mavlink_channel_t>(_mavlinkChannel), signingKeyBytes, MAVLinkSigning::insecureConnectionAccceptUnsignedCallback)) {
+            if (signingKeyBytes.isEmpty()) {
                 qCDebug(LinkInterfaceLog) << "Signing disabled on channel" << _mavlinkChannel;
-            }
-            else
-            {
+            } else {
                 qCDebug(LinkInterfaceLog) << "Signing enabled on channel" << _mavlinkChannel;
             }
-        }
-        else
-        {
+        } else {
             qWarning() << Q_FUNC_INFO << "Failed To enable Signing on channel" << _mavlinkChannel;
             // FIXME: What should we do here?
             return false;
@@ -97,16 +89,14 @@ bool LinkInterface::_allocateMavlinkChannel()
 {
     Q_ASSERT(!mavlinkChannelIsSet());
 
-    if (mavlinkChannelIsSet())
-    {
+    if (mavlinkChannelIsSet()) {
         qCWarning(LinkInterfaceLog) << Q_FUNC_INFO << "already have" << _mavlinkChannel;
         return true;
     }
 
     _mavlinkChannel = LinkManager::instance()->allocateMavlinkChannel();
 
-    if (!mavlinkChannelIsSet())
-    {
+    if (!mavlinkChannelIsSet()) {
         qCWarning(LinkInterfaceLog) << Q_FUNC_INFO << "failed";
         return false;
     }
@@ -122,8 +112,7 @@ void LinkInterface::_freeMavlinkChannel()
 {
     qCDebug(LinkInterfaceLog) << Q_FUNC_INFO << _mavlinkChannel;
 
-    if (!mavlinkChannelIsSet())
-    {
+    if (!mavlinkChannelIsSet()) {
         return;
     }
 
@@ -152,37 +141,29 @@ void LinkInterface::writeBytesThreadSafe(const char *bytes, int length)
 
 void LinkInterface::removeVehicleReference()
 {
-    if (_vehicleReferenceCount != 0)
-    {
+    if (_vehicleReferenceCount != 0) {
         _vehicleReferenceCount--;
         _connectionRemoved();
-    }
-    else
-    {
+    } else {
         qCWarning(LinkInterfaceLog) << Q_FUNC_INFO << "called with no vehicle references";
     }
 }
 
 void LinkInterface::_connectionRemoved()
 {
-    if (_vehicleReferenceCount == 0)
-    {
+    if (_vehicleReferenceCount == 0) {
         // Since there are no vehicles on the link we can disconnect it right now
         disconnect();
-    }
-    else
-    {
+    } else {
         // If there are still vehicles on this link we allow communication lost to trigger and don't automatically disconect until all the vehicles go away
     }
 }
 
 void LinkInterface::setSigningSignatureFailure(bool failure)
 {
-    if (_signingSignatureFailure != failure)
-    {
+    if (_signingSignatureFailure != failure) {
         _signingSignatureFailure = failure;
-        if (_signingSignatureFailure)
-        {
+        if (_signingSignatureFailure) {
             emit communicationError(tr("Signing Failure"), tr("Signing signature mismatch"));
         }
     }
