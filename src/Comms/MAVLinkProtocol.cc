@@ -157,7 +157,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
 
     // * Verify message here
     if (data.size() > SIGN_HEADER_SIZE+MAVLINK_MAX_PACKET_LEN+SIGN_MAX_LEN) {
-        // qDebug() << "Package bigger than expected: " << data.size();
+        qDebug() << "Package bigger than expected: " << data.size();
         return;
     }
     if (px4_key == NULL)
