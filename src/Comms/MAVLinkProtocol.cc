@@ -157,7 +157,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
 
     // * Verify message here
     if (data.size() > SIGN_HEADER_SIZE+MAVLINK_MAX_PACKET_LEN+SIGN_MAX_LEN) {
-        qDebug() << "Package bigger than expected: " << data.size();
+        qDebug() << "Package bigger than allowed: " << data.size();
         return;
     }
     if (px4_key == NULL)
@@ -166,7 +166,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
     }
     uint8_t msg_raw[MAVLINK_MAX_PACKET_LEN];
     int msg_size = verify(msg_raw, (uint8_t *)data.data(), data.size(), px4_key);
-    if (msg_size < 1)
+    if (msg_size <= 0)
     {
         qCDebug(MAVLinkProtocolLog) << "Invalid Signature";
         return;
