@@ -12,7 +12,9 @@
 > git submodule update --recursive
 > ```
 
-2. I had to disable the `QGC_ENABLE_GST_VIDEOSTREAMING` optional feature. For that, access `root/cmake/CustomOptions.cmake` and change (or add) the line `option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer Video Backend" OFF)` from ON to OFF
+2. I had to disable the `QGC_ENABLE_GST_VIDEOSTREAMING` optional feature. For that, access `root/cmake/CustomOptions.cmake` and change (or add) the line `option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer Video Backend" OFF)` from ON to OFF.
+
+> In newer versions this problem is already addressed with an if condition. This might be your case.
 
 3. Before building, I had to copy a file that was missing, probably because the submodule update didn\`t worked properly. For that, inside `root/resources/SDL_GameControllerDB` create a file named `gamecontrollerdb.txt` and paste the content from the [original file](https://github.com/mdqinc/SDL_GameControllerDB/blob/e15eac7b43d0527b475409b2a488681c5bbea1ea/gamecontrollerdb.txt)
 

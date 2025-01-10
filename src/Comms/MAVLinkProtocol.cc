@@ -26,6 +26,8 @@
 
 #ifdef RSA_SCHEME
 #include <rsa.h>
+#elif ECDSA_SCHEME
+#include <ecdsa.h>
 #else // * The default method will be no signature
 #include <no_sign.h>
 #endif
@@ -153,21 +155,29 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
         return;
     }
 
-    // !! Acredito ser aqui que a mensagem eh recebida e consequentemente verificada.
+    // * Verify message here
+    if (data.size() > SIGN_HEADER_SIZE+MAVLINK_MAX_PACKET_LEN+SIGN_MAX_LEN) {
+        qDebug() << "Package bigger than allowed: " << data.size();
+        return;
+    }
     if (px4_key == NULL)
-    {           
+    {
         px4_key = read_key(PUBLIC_KEY, pk_name);
     }
-    int msg_size = verify((uint8_t *)data.data(), data.size(), px4_key);
+    uint8_t msg_raw[MAVLINK_MAX_PACKET_LEN];
+    int msg_size = verify(msg_raw, (uint8_t *)data.data(), data.size(), px4_key);
+    if (msg_size <= 0)
+    {
+        qCDebug(MAVLinkProtocolLog) << "Invalid Signature";
+        return;
+    }
 
-    for (int i = 0; i<msg_size; i++){
-    // for (const uint8_t &byte: data) {
-
+    for (int i = 0; i < msg_size; i++){
         const uint8_t mavlinkChannel = link->mavlinkChannel();
         mavlink_message_t message{};
         mavlink_status_t status{};
 
-        if (mavlink_parse_char(mavlinkChannel, data.data()[i], &message, &status) != MAVLINK_FRAMING_OK) {
+        if (mavlink_parse_char(mavlinkChannel, msg_raw[i], &message, &status) != MAVLINK_FRAMING_OK) {
             continue;
         }
 
@@ -268,7 +278,7 @@ void MAVLinkProtocol::_forwardSupport(const mavlink_message_t &message)
     }
 
     uint8_t buf[MAVLINK_MAX_PACKET_LEN]{};
-    const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);    
+    const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
     (void) forwardingSupportLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
 }
 

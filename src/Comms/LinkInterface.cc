@@ -23,6 +23,8 @@
 
 #ifdef RSA_SCHEME
 #include <rsa.h>
+#elif ECDSA_SCHEME
+#include <ecdsa.h>
 #else // * The default method will be no signature
 #include <no_sign.h>
 #endif
@@ -121,17 +123,18 @@ void LinkInterface::_freeMavlinkChannel()
 void LinkInterface::writeBytesThreadSafe(const char *bytes, int length)
 {
     // * Sign message here
-	if (qgc_key == NULL)
-	{
-		qgc_key = read_key(PRIVATE_KEY, sk_name);
-	}
+    if (qgc_key == NULL)
+    {
+        qgc_key = read_key(PRIVATE_KEY, sk_name);
+    }
 
-	uint8_t final_message[MAVLINK_MAX_PACKET_LEN+SIGMA_LEN];
-	int final_len = sign(final_message, (uint8_t *)bytes, length, qgc_key);
-	if (final_len <= 0){
-		printf("sign error: %s\n", strerror(errno));
-	}
-    
+    uint8_t final_message[SIGN_HEADER_SIZE + MAVLINK_MAX_PACKET_LEN + SIGN_MAX_LEN];
+    int final_len = sign(final_message, (uint8_t *)bytes, length, qgc_key);
+    if (final_len <= 0)
+    {
+        printf("sign error: %s\n", strerror(errno));
+    }
+
     const QByteArray data((const char *)final_message, final_len);
     (void) QMetaObject::invokeMethod(this, "_writeBytes", Qt::AutoConnection, data);
 }

@@ -1,4 +1,4 @@
-#include "rsa.h"
+#include "ecdsa.h"
 
 // Transform int to uint8_t
 int int2uc(uint8_t *res, int num)

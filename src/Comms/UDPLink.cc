@@ -181,12 +181,13 @@ void UDPLink::readBytes()
         if (slen == -1) {
             break;
         }
+
+        // With the new signature scheme, we need that everypackage is alone during the verification
+        // That is why we had to change and emit the message in every iteration of the loop
         databuffer.append(datagram);
-        //-- Wait a bit before sending it over
-        if (databuffer.size() > 10 * 1024) {
-            emit bytesReceived(this, databuffer);
-            databuffer.clear();
-        }
+        emit bytesReceived(this, databuffer);
+        databuffer.clear();
+
         // TODO: This doesn't validade the sender. Anything sending UDP packets to this port gets
         // added to the list and will start receiving datagrams from here. Even a port scanner
         // would trigger this.

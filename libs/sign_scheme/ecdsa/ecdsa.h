@@ -1,10 +1,12 @@
+// https://docs.openssl.org/3.0/man7/EVP_SIGNATURE-ECDSA/
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 #include <openssl/evp.h>
-#include <openssl/rsa.h>
+#include <openssl/ec.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
 #include <stdio.h>
@@ -13,7 +15,7 @@ extern "C"
 
 #define PRIVATE_KEY 0
 #define PUBLIC_KEY 1
-#define SIGN_HEADER_SIZE 4
+#define SIGN_HEADER_SIZE 4 // int size
 #define SIGN_MAX_LEN 2048
 
     // ! Define unique interface
