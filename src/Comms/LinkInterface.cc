@@ -21,16 +21,7 @@
 
 #include <QtQml/QQmlEngine>
 
-#ifdef RSA_SCHEME
-#include <rsa.h>
-#elif ECDSA_SCHEME
-#include <ecdsa.h>
-#else // * The default method will be no signature
-#include <no_sign.h>
-#endif
-
-const char *sk_name = "pki/qgc_sk.pem";
-static key_type *qgc_key;
+#include <sign_scheme.h>
 
 QGC_LOGGING_CATEGORY(LinkInterfaceLog, "LinkInterfaceLog")
 
@@ -123,12 +114,9 @@ void LinkInterface::_freeMavlinkChannel()
 void LinkInterface::writeBytesThreadSafe(const char *bytes, int length)
 {
     // * Sign message here
-    if (qgc_key == NULL)
-    {
-        qgc_key = read_key(PRIVATE_KEY, sk_name);
-    }
+    static pki_t qgc_key = read_key(PRIVATE_KEY);
 
-    uint8_t final_message[SIGN_HEADER_SIZE + MAVLINK_MAX_PACKET_LEN + SIGN_MAX_LEN];
+    uint8_t final_message[MAX_SIGN_HEADER_SIZE + MAVLINK_MAX_PACKET_LEN + MAX_SIGN_MAX_LEN];
     int final_len = sign(final_message, (uint8_t *)bytes, length, qgc_key);
     if (final_len <= 0)
     {

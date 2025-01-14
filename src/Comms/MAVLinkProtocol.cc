@@ -24,16 +24,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QStandardPaths>
 
-#ifdef RSA_SCHEME
-#include <rsa.h>
-#elif ECDSA_SCHEME
-#include <ecdsa.h>
-#else // * The default method will be no signature
-#include <no_sign.h>
-#endif
-
-const char *pk_name = "pki/px4_pk.pem";
-static key_type *px4_key;
+#include <sign_scheme.h>
 
 QGC_LOGGING_CATEGORY(MAVLinkProtocolLog, "qgc.comms.mavlinkprotocol")
 
@@ -156,14 +147,12 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
     }
 
     // * Verify message here
-    if (data.size() > SIGN_HEADER_SIZE+MAVLINK_MAX_PACKET_LEN+SIGN_MAX_LEN) {
+    if (data.size() > MAX_SIGN_HEADER_SIZE+MAVLINK_MAX_PACKET_LEN+MAX_SIGN_MAX_LEN) {
         qDebug() << "Package bigger than allowed: " << data.size();
         return;
     }
-    if (px4_key == NULL)
-    {
-        px4_key = read_key(PUBLIC_KEY, pk_name);
-    }
+    
+    static pki_t px4_key = read_key(PUBLIC_KEY);
     uint8_t msg_raw[MAVLINK_MAX_PACKET_LEN];
     int msg_size = verify(msg_raw, (uint8_t *)data.data(), data.size(), px4_key);
     if (msg_size <= 0)
