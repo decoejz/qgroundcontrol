@@ -1,8 +1,6 @@
 add_subdirectory(AirLink)
 add_subdirectory(MockLink)
 
-message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}/../mav_aris/sign_scheme")
-# add_subdirectory(${CMAKE_SOURCE_DIR}../mav_aris/sign_scheme sign_scheme.build)
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/../mav_aris/sign_scheme/install")
 
 find_package(SignScheme REQUIRED)
@@ -14,33 +12,6 @@ endif()
 set(SIGN_SCHEME_LIB_DIR "${CMAKE_SOURCE_DIR}/../mav_aris/sign_scheme")
 include_directories(${SIGN_SCHEME_LIB_DIR})
 link_directories(${SIGN_SCHEME_LIB_DIR})
-
-# add_subdirectory(SignScheme)
-
-# string(ASCII 27 Esc)
-# set(ColourReset "${Esc}[m")
-# set(Red         "${Esc}[31m")
-# set(Green       "${Esc}[32m")
-# set(Blue        "${Esc}[34m")
-
-# # Check if SIGN_TYPE environment variable is defined
-# if(DEFINED ENV{SIGN_TYPE})
-# 	if("$ENV{SIGN_TYPE}" STREQUAL "RSA")
-# 		message(STATUS "SIGN_TYPE is ${Blue}RSA${ColourReset}.")
-# 		set(SCHEME_LIB rsa)
-# 		add_definitions(-DRSA_SCHEME)
-#     elseif("$ENV{SIGN_TYPE}" STREQUAL "ECSDA")
-#         message(STATUS "SIGN_TYPE is ${Blue}ECDSA${ColourReset}.")
-#         set(SCHEME_LIB ecdsa)
-#         add_definitions(-DECDSA_SCHEME)
-# 	else()
-# 		message(STATUS "SIGN_TYPE ${Blue}no signature${ColourReset} configured.")
-# 		set(SCHEME_LIB no_sign)
-# 	endif()
-# else()
-# 	message(STATUS "SIGN_TYPE ${Blue}no signature${ColourReset} configured.")
-# 	set(SCHEME_LIB no_sign)
-# endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Network Qml Test Widgets)
 
