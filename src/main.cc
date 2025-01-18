@@ -82,7 +82,7 @@ void sigHandler(int s)
 
 int main(int argc, char *argv[])
 {
-    setenv("APP_NAME", "qgc", 0);
+    setenv("APP_NAME", "QGC", 0);
     
 #ifndef __mobile__
     // We make the runguard key different for custom and non custom
