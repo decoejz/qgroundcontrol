@@ -1,7 +1,7 @@
 add_subdirectory(AirLink)
 add_subdirectory(MockLink)
 
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/../mav_aris/sign_scheme/install")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/../sign_scheme/install")
 
 find_package(SignScheme REQUIRED)
 
@@ -9,7 +9,7 @@ if ("${APPLE}")
     add_compile_options(-I/opt/homebrew/opt/openssl@3/include)
 endif()
 
-set(SIGN_SCHEME_LIB_DIR "${CMAKE_SOURCE_DIR}/../mav_aris/sign_scheme")
+set(SIGN_SCHEME_LIB_DIR "${CMAKE_SOURCE_DIR}/../sign_scheme")
 include_directories(${SIGN_SCHEME_LIB_DIR})
 link_directories(${SIGN_SCHEME_LIB_DIR})
 

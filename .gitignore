@@ -98,3 +98,5 @@ libs/qmlglsink/
 src/GPS/Drivers/
 *.pem
 *.csv
+
+config.env
